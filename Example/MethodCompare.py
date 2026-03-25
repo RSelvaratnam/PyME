@@ -10,6 +10,7 @@ sys.path.insert(0, parent_dir)
 
 # Now you can import your module exactly as you wanted
 import CC_Method_Analysis_v_0_1 as CC
+CC.manage_figures_folder() # delete and recreate the Figures folder
 
 
 
@@ -39,16 +40,22 @@ document.save('MethodComparison.docx')
 '''
 Method comparison begins here; loading data into dataframe, df_MC
 '''
-Input_file_name = 'NT-proBNP_.xlsx'
+Input_file_name = os.path.join(os.path.dirname(__file__), 'NT-proBNP_.xlsx')
 df_MC = pd.read_excel(Input_file_name, 
                       sheet_name='Method Comparison', 
                       usecols='B:G', 
                       skiprows=range(0, 43))
 
-#if Test_Analyte == Test_Analyte:
-#    Test_Analyte = Test_Analyte + " (sn: " + Test_Instrument_sn +")"
+Test_Analyte = 'Nt-proBNP'
+Test_Unit = 'ng/L'
 
-
-df_MC.rename(columns={'Primary Refence Method Result': f"{Reference_Analyte}", "Test Method Result":Test_Analyte}, inplace=True)
-
-df_MC
+CC.MC_output(analyte=Test_Analyte,
+            document = Document("MethodComparison.docx"), 
+             x = df_MC.iloc[:,2], 
+             y = df_MC.iloc[:,3], 
+             z = None,
+             z2 = df_MC['Day'],
+             Unit = Test_Unit, 
+             Error_level_cut_off = Error_level_cut_off, 
+             error1 = error1, 
+             error2 = error2)
