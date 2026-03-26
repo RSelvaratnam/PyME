@@ -1,8 +1,7 @@
 import sys
 import os
 
-# Get the absolute path of the parent directory
-# This automatically finds the 'My Python Modules for CC Method Comp' folder
+# Get the absolute path of the directory above 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 # Add that directory to Python's search path
@@ -14,11 +13,11 @@ CC.manage_figures_folder() # delete and recreate the Figures folder
 
 
 
-######## Error information #################
+#______________Error information____________________________
 Error_level_cut_off = None # cut-off between absolute and percentage error
 error1 = None # absolute error limit below the cut-off
 error2 = 15 # percentage error limit above the cut-off
-############################################
+#___________________________________________________________
 
 from docx import Document 
 from docx.shared import Inches, Cm, Pt
