@@ -1,27 +1,19 @@
-import sys
-import os
-
-# Get the absolute path of the directory above 
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-
-# Add that directory to Python's search path
-sys.path.insert(0, parent_dir)
-
-# Now you can import your module exactly as you wanted
+import pandas as pd
 import CC_Method_Analysis_v_0_1 as CC
-CC.manage_figures_folder() # delete and recreate the Figures folder
-
-
-
-#______________Error information____________________________
-Error_level_cut_off = None # cut-off between absolute and percentage error
-error1 = None # absolute error limit below the cut-off
-error2 = 15 # percentage error limit above the cut-off
-#___________________________________________________________
-
 from docx import Document 
 from docx.shared import Inches, Cm, Pt
-import pandas as pd
+CC.manage_figures_folder() # delete and recreate the Figures folder within the current directory
+
+#______________Test and Error information____________________________
+Input_file_name = 'NT-proBNP_.xlsx'
+Test_Analyte = 'A1c'
+Test_Unit = '%'
+
+Error_level_cut_off = None # cut-off between absolute and percentage error
+error1 = None # absolute error limit below the cut-off
+error2 = 7 # percentage error limit above the cut-off
+
+#___________________________________________________________
 
 #open a blank document
 document = Document()
@@ -36,18 +28,13 @@ for section in sections:
 
 document.save('MethodComparison.docx')
 
-'''
-Method comparison begins here; loading data into dataframe, df_MC
-'''
-Input_file_name = os.path.join(os.path.dirname(__file__), 'NT-proBNP_.xlsx')
+#read the data from the excel file
 df_MC = pd.read_excel(Input_file_name, 
                       sheet_name='Method Comparison', 
                       usecols='B:G', 
                       skiprows=range(0, 43))
 
-Test_Analyte = 'Nt-proBNP'
-Test_Unit = 'ng/L'
-
+# Call the method comparison function
 CC.MC_output(analyte=Test_Analyte,
             document = Document("MethodComparison.docx"), 
              x = df_MC.iloc[:,2], 
