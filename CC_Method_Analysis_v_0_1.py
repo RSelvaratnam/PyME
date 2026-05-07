@@ -162,6 +162,9 @@ def sample_comparions_tableX(x, y, z, **error_info):
     error1 = error_info.get("error1", None)
     error2 = error_info.get("error2", None)
     Error_level_cut_off = error_info.get("Error_level_cut_off", None)
+    
+    if Error_level_cut_off is not None:
+        Error_level_cut_off = float(Error_level_cut_off)
 
     # Create dataframe
     analyte_dataSummary = pd.concat([x, y, z], axis=1)
@@ -183,26 +186,43 @@ def sample_comparions_tableX(x, y, z, **error_info):
 
     # Apply Pass/Fail criteria
     def check_pass_fail(row):
-        # Check for NaN inx.nameor Test Method (Y)
+        # Check for NaN in x.name or Test Method (Y)
         if pd.isna(row[x.name]) or pd.isna(row[y.name]):
             return "Not assessed"
-        
+
         if Error_level_cut_off is not None:
+            # We removed the float cast from here because we already did it at the top of the main function!
+            
             if error1 is None or error2 is None:
                 raise ValueError(
                     "Please provide both 'error1' and 'error2' if and when you specify 'Error_level_cut_off' value."
                 )
-            if row[x.name] >= Error_level_cut_off:
-                return "**FAIL**" if abs(row["%(Y-X)/X"]) > error2 else "pass"
+            
+            # Check if x is numeric before comparing to the float cut-off
+            if isinstance(row[x.name], (int, float)):
+                if row[x.name] >= Error_level_cut_off:
+                    return "**FAIL**" if abs(row["%(Y-X)/X"]) > error2 else "pass"
+                else:
+                    return "**FAIL**" if abs(row["Y-X"]) > error1 else "pass"
             else:
-                return "**FAIL**" if abs(row["Y-X"]) > error1 else "pass"
+                # If it's a string (e.g., "<0.05"), it skips the >= comparison entirely
+                return "Not assessed" 
+
         elif Error_level_cut_off is None:
             if error1 is not None and error2 is None:
-                return "**FAIL**" if abs(row["Y-X"]) > error1 else "pass"
+                # Check if x is numeric before comparing to the float cut-off
+                if isinstance(row[x.name], (int, float)):
+                    return "**FAIL**" if abs(row["Y-X"]) > error1 else "pass"
+                else:
+                    return "Not assessed"  # If it's a string (e.g., "<0.05"), it skips the numeric comparison entirely
             elif error2 is not None and error1 is None:
-                return "**FAIL**" if abs(row["%(Y-X)/X"]) > error2 else "pass"
+                if isinstance(row[x.name], (int, float)):
+                    return "**FAIL**" if abs(row["%(Y-X)/X"]) > error2 else "pass"
+                else:
+                    return "Not assessed"
             else:
                 return "Not assessed"  # When both error1 and error2 are None or both are provided (not handled here)
+                
         return "Not assessed"
 
     analyte_dataSummary["Pass/Fail"] = analyte_dataSummary.apply(check_pass_fail, axis=1)
@@ -454,6 +474,8 @@ def Deming_Plot_Equal_Variance_with_Error2_PX(x, y, z=None, z2=None, **error_inf
     error1 = error_info.get("error1")
     error2 = error_info.get("error2")
     cutoff = error_info.get("Error_level_cut_off")
+    cutoff = float(cutoff) if cutoff is not None else None # Ensure cutoff is a float if provided
+
     output_path = error_info.get("output_path", "Figures/Deming_regression.png")
 
     # Reframe and clean data
