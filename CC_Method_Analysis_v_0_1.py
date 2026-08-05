@@ -531,7 +531,11 @@ def Deming_Plot_Equal_Variance_with_Error2_PX(x, y, z=None, z2=None, **error_inf
 
     # Add scatter traces, ensuring legend and color scale
     for trace in scatter_fig.data:
-        trace.update(showlegend=True)  # Ensure legend is shown for z2
+
+        if not trace.name: #If the trace doesn't have a name (e.g., when z and z2 are None)
+            trace.name = "Samples" # give it a default label
+            
+        trace.update(showlegend=True)  # Ensure legend is shown for z2 and z, i.e. use labels above.
         fig.add_trace(trace)
 
     # Apply color scale to final figure if z is provided
