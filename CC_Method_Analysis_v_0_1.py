@@ -169,6 +169,7 @@ def sample_comparions_tableX(x, y, z, **error_info):
     
     #reset the inex to get Sample ID as a column
     analyte_dataSummary.reset_index(inplace=True)
+    analyte_dataSummary.index += 1 # start at 1 instead of 0
     analyte_dataSummary = analyte_dataSummary.rename(columns={analyte_dataSummary.columns[0]:'Sample ID' })
     
     # Convert to numeric, coerce errors to NaN, because we perform numeric calculations
