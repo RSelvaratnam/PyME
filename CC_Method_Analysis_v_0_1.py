@@ -3,8 +3,6 @@ import pandas as pd
 import numpy as np
 from uncertainties import ufloat
 
-
-
 from scipy import stats
 from scipy.stats import shapiro
 from scipy.stats import linregress
@@ -162,7 +160,7 @@ def sample_comparions_tableX(x, y, z, **error_info):
     error1 = error_info.get("error1", None)
     error2 = error_info.get("error2", None)
     Error_level_cut_off = error_info.get("Error_level_cut_off", None)
-    
+
     if Error_level_cut_off is not None:
         Error_level_cut_off = float(Error_level_cut_off)
 
@@ -178,8 +176,11 @@ def sample_comparions_tableX(x, y, z, **error_info):
     analyte_dataSummary.iloc[:,2] = pd.to_numeric(analyte_dataSummary.iloc[:,2], errors='coerce') #test method
 
     # Calculate differences and percent differences
+    # FIX: Replace 0 with NaN in the denominator to prevent ZeroDivisionError
+    safe_denominator = analyte_dataSummary.iloc[:,1].replace(0, float('nan'))
+    
     analyte_dataSummary["Y-X"] = analyte_dataSummary.iloc[:,2] - analyte_dataSummary.iloc[:,1]
-    analyte_dataSummary["%(Y-X)/X"] = (analyte_dataSummary["Y-X"] / analyte_dataSummary.iloc[:,1]) * 100
+    analyte_dataSummary["%(Y-X)/X"] = (analyte_dataSummary["Y-X"] / safe_denominator) * 100
     analyte_dataSummary["Y-X"] = pd.to_numeric(analyte_dataSummary["Y-X"], errors='coerce')
     analyte_dataSummary["%(Y-X)/X"] = pd.to_numeric(analyte_dataSummary["%(Y-X)/X"], errors='coerce')
     analyte_dataSummary[["Y-X", "%(Y-X)/X"]] = analyte_dataSummary[["Y-X", "%(Y-X)/X"]].round(3)
@@ -191,7 +192,6 @@ def sample_comparions_tableX(x, y, z, **error_info):
             return "Not assessed"
 
         if Error_level_cut_off is not None:
-            # We removed the float cast from here because we already did it at the top of the main function!
             
             if error1 is None or error2 is None:
                 raise ValueError(
@@ -233,7 +233,6 @@ def sample_comparions_tableX(x, y, z, **error_info):
 
     # Return sorted dataframe
     return analyte_dataSummary.sort_values(by=[x.name]), df_selected_columns
-
 
 def Histogram_grouped(x,y):
     """_summary_
@@ -474,8 +473,6 @@ def Deming_Plot_Equal_Variance_with_Error2_PX(x, y, z=None, z2=None, **error_inf
     error1 = error_info.get("error1")
     error2 = error_info.get("error2")
     cutoff = error_info.get("Error_level_cut_off")
-    cutoff = float(cutoff) if cutoff is not None else None # Ensure cutoff is a float if provided
-
     output_path = error_info.get("output_path", "Figures/Deming_regression.png")
 
     # Reframe and clean data
@@ -524,7 +521,7 @@ def Deming_Plot_Equal_Variance_with_Error2_PX(x, y, z=None, z2=None, **error_inf
             x=np.concatenate([x_range, x_range[::-1]]),
             y=np.concatenate([yabove, ybelow[::-1]]),
             fill="toself",
-            fillcolor="rgba(0, 139, 139, .15)",  # dark cyan with 15% opacity
+            fillcolor="rgba(211,211,211,0.60)",  # dark gray with 15% opacity
             line=dict(color="rgba(255,255,255,0)"),
             name="Allowable Error",
             showlegend=True,
@@ -697,8 +694,8 @@ def Difference_plot_median_with_error2(x, y, z=None, z2=None, **error_info):
             x1=x1,
             y0=0 + error1,
             y1=0 - error1,
-            fillcolor="rgba(0, 139, 139, .15)",  # dark cyan with 15% opacity
-            opacity=0.5,
+            fillcolor="lightgrey", 
+            opacity=0.6,
             layer="below",
             line_width=0,
             name ="Allowable Error",
@@ -755,8 +752,8 @@ def Difference_plot_Percent_median_with_error2(x, y, z=None, z2=None, **error_in
     z2 = df[z2.name] if z2 is not None else None
 
     # Calculate percent difference
-    if (x == 0).any():
-        raise ValueError("Input x contains zero values, which would cause division by zero in percent difference calculation.")
+    # Replace 0 with NaN in x to prevent zero-division without aborting the script
+    x = x.replace(0, float('nan'))
     ydiff = 100 * (y - x) / x
 
     # Build scatter plot arguments dynamically
@@ -828,8 +825,8 @@ def Difference_plot_Percent_median_with_error2(x, y, z=None, z2=None, **error_in
             x1=x1,
             y0=0 + error2,
             y1=0 - error2,
-            fillcolor="rgba(0, 139, 139, .15)",  # dark cyan with 15% opacity
-            opacity=0.5,
+            fillcolor="lightgrey",
+            opacity=0.6,
             layer="below",
             line_width=0,
             name = "Allowable Error"
@@ -1868,7 +1865,7 @@ def MC_output(document,analyte, x, y, z=None, z2=None, Unit=None, **error_info):
         
     # add heading
     #p = document.add_heading(f"Method Comparison Studies", level=1)
-    p = document.add_heading(f"Comparison of {y.name} vs. {x.name}", level=2)
+    p = document.add_heading(f" {y.name} vs. {x.name}", level=2)
     p = document.add_paragraph("")
 
     p.add_run(
@@ -1942,7 +1939,7 @@ def MC_output(document,analyte, x, y, z=None, z2=None, Unit=None, **error_info):
         p = document.add_paragraph(
             "The difference in measurements between the Test Method and Reference Method sufficiently resembles a Gaussian distribution, based on Shapiro-Wilk Test. Consider the Student T-test."
         )
-        document.add_heading("Summary of Paired Student t-Test: ", level=2)
+        document.add_heading("Summary of Paired Student t-Test: ", level=4)
         p = document.add_paragraph(
             "Null Hypothesis, H0 = The means of the methods are equivalent"
         )
@@ -2311,7 +2308,7 @@ def RI_output(document, analyte, df, low_lim_RI, high_lim_RI, Unit):
 
     ''' 
     document.add_page_break()
-    document.add_heading("Reference Interval Verification", level=1)
+    document.add_heading(f"Reference Interval Verification of {analyte}", level=1)
     # p = document.add_paragraph('')
     p = document.add_paragraph('Reference interval (RI) verification is as recommended by CLSI EP28-A3c. ')
     p.add_run('Ideally at least 90% of the results must be within the proposed RI.')
@@ -2342,13 +2339,16 @@ def RI_output(document, analyte, df, low_lim_RI, high_lim_RI, Unit):
         p.add_run(" of the reference individuals are")
         p.add_run(" within the proposed RI.").bold = True
     else:
-        p.add_run(f"The proposed reference interval may not be ideal.  Additional sampling and/or optimization may need to be considered.")
+        p.add_run(f"The proposed reference interval may not be ideal(inlier/total = {inlier}/{total_count} = {pWithin:.1f}%).  Additional sampling and/or optimization may need to be considered.")
     
     medians_df = RI_histogram(df, low_lim_RI, high_lim_RI)
     print(medians_df)
     p = document.add_paragraph("")
-    if (medians_df.iloc[0,0] == "Female") and (medians_df.iloc[1,0] == "Male"): 
-        p.add_run(f"The median value by gender is {round(medians_df.iloc[0,1],1)} {Unit} and {round(medians_df.iloc[1,1],1)} {Unit}, for {medians_df.iloc[0,0]} and {medians_df.iloc[1,0]}, respectively.")
+    if medians_df.shape[0] == 2:
+        if (medians_df.iloc[0,0] == "Female") and (medians_df.iloc[1,0] == "Male"): 
+            p.add_run(f"The median value by gender is {round(medians_df.iloc[0,1],1)} {Unit} and {round(medians_df.iloc[1,1],1)} {Unit}, for {medians_df.iloc[0,0]} and {medians_df.iloc[1,0]}, respectively.")
+    else:
+        p.add_run(f"The median value of the reference individuals is {round(medians_df.iloc[0,1],1)} {Unit}.")
    # CC.create_word_table(document, medians_df)
     
     document.add_picture("Figures/RI.png", width=Inches(7.5))

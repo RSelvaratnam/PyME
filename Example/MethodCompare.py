@@ -12,7 +12,6 @@ import CC_Method_Analysis_v_0_1 as CC
 CC.manage_figures_folder() # delete and recreate the Figures folder
 
 
-
 #______________Error information____________________________
 Error_level_cut_off = None # cut-off between absolute and percentage error
 error1 = None # absolute error limit below the cut-off
