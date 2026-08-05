@@ -2232,7 +2232,7 @@ def precision_output(document, analyte, df, Unit):
     Total_SD = variation_df.iloc[3,1]
     
     def write_to_csv_precision(analyte, n, meanLX, Total_CV, Total_SD, Unit):
-        header = ['Analyte', 'N', 'Mean', 'Total %CV', 'Total SD' 'Unit']
+        header = ['Analyte', 'N', 'Mean', 'Total %CV', 'Total SD', 'Unit']
     
         # Check if file exists to determine if we need to write the header
         filename = "PrecisionSummary.csv"
