@@ -155,29 +155,27 @@ def sample_comparions_tableX(x, y, z, **error_info):
 
     x = reference method
     y = test method
-    z = hue or characteristic or Znique to this sample
+    z = hue or characteristic or unique to this sample
     """
     error1 = error_info.get("error1", None)
     error2 = error_info.get("error2", None)
     Error_level_cut_off = error_info.get("Error_level_cut_off", None)
-
+  
     if Error_level_cut_off is not None:
         Error_level_cut_off = float(Error_level_cut_off)
 
     # Create dataframe
-    analyte_dataSummary = pd.concat([x, y, z], axis=1)
-    
-    #reset the inex to get Sample ID as a column
-    analyte_dataSummary.reset_index(inplace=True)
-    analyte_dataSummary.index += 1 # start at 1 instead of 0
-    analyte_dataSummary = analyte_dataSummary.rename(columns={analyte_dataSummary.columns[0]:'Sample ID' })
-    
+    analyte_dataSummary = pd.concat([x, y, z], axis=1).reset_index(drop=True)
+    analyte_dataSummary.index = range(1, len(analyte_dataSummary) + 1)
+    analyte_dataSummary.index.name = 'Sample ID'
+    analyte_dataSummary = analyte_dataSummary.reset_index()
+
     # Convert to numeric, coerce errors to NaN, because we perform numeric calculations
     analyte_dataSummary.iloc[:,1] = pd.to_numeric(analyte_dataSummary.iloc[:,1], errors='coerce') #reference method
     analyte_dataSummary.iloc[:,2] = pd.to_numeric(analyte_dataSummary.iloc[:,2], errors='coerce') #test method
 
     # Calculate differences and percent differences
-    # FIX: Replace 0 with NaN in the denominator to prevent ZeroDivisionError
+    # Replace 0 with NaN in the denominator to prevent ZeroDivisionError
     safe_denominator = analyte_dataSummary.iloc[:,1].replace(0, float('nan'))
     
     analyte_dataSummary["Y-X"] = analyte_dataSummary.iloc[:,2] - analyte_dataSummary.iloc[:,1]
@@ -193,6 +191,7 @@ def sample_comparions_tableX(x, y, z, **error_info):
             return "Not assessed"
 
         if Error_level_cut_off is not None:
+            # We removed the float cast from here because we already did it at the top of the main function!
             
             if error1 is None or error2 is None:
                 raise ValueError(
