@@ -1,6 +1,5 @@
 # Readme
-
-PyME is short for Python for Method Evaluation. PyMe module consists of some crude function utilized to run method comparison studies. By no means, they are perfect but do get the task done.
+This is a Python based Method evaluation (PyMe) module for comparing two test methods. The main PyMe file consists of some crude function utilized to run method comparison studies. By no means, they are perfect but do get the task done.
 
 Many of the functions have various dependencies. 
 These include, pandas, numpy, uncertainties, scipy, statsmodels, pingouin, python-docx, PIL, statsmodels, and plotly, pygam, and few others dedicated to running these on the Windows.
