@@ -1,18 +1,16 @@
 import sys
 import os
-
-# Get the absolute path of the directory above 
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-
-# Add that directory to Python's search path
-sys.path.insert(0, parent_dir)
-
-# Now you can import your module exactly as you wanted
 import CC_Method_Analysis_v_0_1 as CC
 CC.manage_figures_folder() # delete and recreate the Figures folder
 
 
-#______________Error information____________________________
+#______________Test and Error information____________________________
+
+Test_Analyte = 'Nt-proBNP'
+Test_Unit = 'ng/L'
+Input_file_name = 'Input_file.xlsx'
+Output_file_name = 'MethodComparison.docx'
+
 Error_level_cut_off = None # cut-off between absolute and percentage error
 error1 = None # absolute error limit below the cut-off
 error2 = 15 # percentage error limit above the cut-off
@@ -33,22 +31,21 @@ for section in sections:
     section.left_margin = Cm(1.5)
     section.right_margin = Cm(1.5)
 
-document.save('MethodComparison.docx')
+document.save(Output_file_name)
 
 '''
 Method comparison begins here; loading data into dataframe, df_MC
 '''
-Input_file_name = os.path.join(os.path.dirname(__file__), 'NT-proBNP_.xlsx')
+
 df_MC = pd.read_excel(Input_file_name, 
                       sheet_name='Method Comparison', 
                       usecols='B:G', 
                       skiprows=range(0, 43))
 
-Test_Analyte = 'Nt-proBNP'
-Test_Unit = 'ng/L'
+
 
 CC.MC_output(analyte=Test_Analyte,
-            document = Document("MethodComparison.docx"), 
+            document = Document(Output_file_name), 
              x = df_MC.iloc[:,2], 
              y = df_MC.iloc[:,3], 
              z = None,
