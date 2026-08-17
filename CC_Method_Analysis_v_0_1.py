@@ -239,7 +239,7 @@ def Histogram_grouped(x,y):
         Create a grouped histogram.  This is specifically for looking at how the 
         two methods of measures are distributed
     Args:
-        df (data frame): This data frame must contain 'Primary Refence Method Result' and 'Test Method Result' columns.
+        df (data frame): This data frame must contain 'Primary Reference Method Result' and 'Test Method Result' columns.
 
     Returns:
         _type_: _plotly figure

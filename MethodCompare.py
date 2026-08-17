@@ -1,7 +1,6 @@
 import sys
 import os
 import CC_Method_Analysis_v_0_1 as CC
-CC.manage_figures_folder() # delete and recreate the Figures folder
 
 
 #______________Test and Error information____________________________
@@ -37,13 +36,17 @@ document.save(Output_file_name)
 Method comparison begins here; loading data into dataframe, df_MC
 '''
 
+print("Recreate Figures folder...", flush=True)
+CC.manage_figures_folder() # delete and recreate the Figures folder
+
+print("Reading Data...", flush = True)
 df_MC = pd.read_excel(Input_file_name, 
                       sheet_name='Method Comparison', 
                       usecols='B:G', 
                       skiprows=range(0, 43))
 
 
-
+print("Generating Method Comparison Report...")
 CC.MC_output(analyte=Test_Analyte,
             document = Document(Output_file_name), 
              x = df_MC.iloc[:,2], 
