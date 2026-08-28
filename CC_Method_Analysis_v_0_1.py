@@ -2255,7 +2255,7 @@ def precision_output(document, analyte, df, Unit):
 
 def linearity_output(document, analyte, Measured_mean,Expected_mean, Measured_err, n,Unit, **error_info ):
     document.add_page_break()
-    document.add_heading("Linearity Analysis", level=1)
+    document.add_heading(f"{analyte} - Linearity Analysis", level=2)
     # p = document.add_paragraph('')
     p = document.add_paragraph('Regression is based on Ordinary Least Squares (OLS) regression. Shaded region represents the defined allowable performance limits.')
     
@@ -2312,7 +2312,7 @@ def RI_output(document, analyte, df, low_lim_RI, high_lim_RI, Unit):
 
     ''' 
     document.add_page_break()
-    document.add_heading(f"Reference Interval Verification of {analyte}", level=1)
+    document.add_heading(f"Reference Interval Verification of {analyte}", level=2)
     # p = document.add_paragraph('')
     p = document.add_paragraph('Reference interval (RI) verification is as recommended by CLSI EP28-A3c. ')
     p.add_run('Ideally at least 90% of the results must be within the proposed RI.')
