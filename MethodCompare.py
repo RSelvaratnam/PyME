@@ -1,6 +1,9 @@
 import sys
 import os
 import CC_Method_Analysis_v_0_1 as CC
+from docx import Document 
+from docx.shared import Inches, Cm, Pt
+import pandas as pd
 
 
 #______________Test and Error information____________________________
@@ -14,10 +17,6 @@ Error_level_cut_off = None # cut-off between absolute and percentage error
 error1 = None # absolute error limit below the cut-off
 error2 = 15 # percentage error limit above the cut-off
 #___________________________________________________________
-
-from docx import Document 
-from docx.shared import Inches, Cm, Pt
-import pandas as pd
 
 #open a blank document
 document = Document()

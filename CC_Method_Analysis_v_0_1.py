@@ -2254,7 +2254,6 @@ def precision_output(document, analyte, df, Unit):
     document.save("MethodComparison.docx")
 
 def linearity_output(document, analyte, Measured_mean,Expected_mean, Measured_err, n,Unit, **error_info ):
-    document.add_page_break()
     document.add_heading(f"{analyte} - Linearity Analysis", level=2)
     # p = document.add_paragraph('')
     p = document.add_paragraph('Regression is based on Ordinary Least Squares (OLS) regression. Shaded region represents the defined allowable performance limits.')
@@ -2262,13 +2261,16 @@ def linearity_output(document, analyte, Measured_mean,Expected_mean, Measured_er
     linearity_plots(Measured_mean,Expected_mean, Measured_err, n, **error_info)
     document.add_picture('Figures/cropped_plot_Linearity.png', width=Inches(8))   
 
-    
+
+    percent_recovery = (Measured_mean / Expected_mean) * 100
+        
     df_Linearity_summary = pd.DataFrame({'Measured Mean': Measured_mean,
                                         'Expected Mean': Expected_mean, 
-                                        'Measured Mean Error': Measured_err
+                                        'Measured Mean Error': Measured_err,
+                                        '%Recovery': percent_recovery
                                         })
     
-    df_Linearity_summary = df_Linearity_summary.round(3)
+    df_Linearity_summary = df_Linearity_summary.round(3).sort_values(by='Expected Mean', ascending=True)
     p = document.add_paragraph('Summary of Linearity Results')
     create_word_table(document, df_Linearity_summary)
     p = document.add_paragraph('')
@@ -2277,13 +2279,10 @@ def linearity_output(document, analyte, Measured_mean,Expected_mean, Measured_er
     linear_interval = f' {round(Measured_mean.min(),2)} - {round(Measured_mean.max(),2)} {Unit}' 
     p.add_run(linear_interval).bold = True
     p = document.add_paragraph('')
-    p.add_run('Linear interval assessed with error:')
-    linear_interval_err = f' {round((Measured_mean - Measured_err).min(),2)} - {round((Measured_mean + Measured_err).max(),2)} {Unit}'
-    p.add_run( linear_interval_err).bold = True
-    p = document.add_paragraph('')
+
     
-    def write_to_csv_linearity(analyte, linear_interval, linear_interval_err, Unit):
-        header = ['Analyte', 'Linear Interval', 'Linear Interval with Error', 'Unit']
+    def write_to_csv_linearity(analyte, linear_interval, Unit):
+        header = ['Analyte', 'Linear Interval', 'Unit']
     
         # Check if file exists to determine if we need to write the header
         filename = "LinearitySummary.csv"
@@ -2298,9 +2297,8 @@ def linearity_output(document, analyte, Measured_mean,Expected_mean, Measured_er
                 writer.writerow(header)
                 
             # Write the data row
-            writer.writerow([analyte, linear_interval, linear_interval_err, Unit])
-    write_to_csv_linearity(analyte, linear_interval, linear_interval_err, Unit)
-    document.save("MethodComparison.docx")
+            writer.writerow([analyte, linear_interval, Unit])
+    write_to_csv_linearity(analyte, linear_interval, Unit)
 
 def RI_output(document, analyte, df, low_lim_RI, high_lim_RI, Unit):   
     '''
