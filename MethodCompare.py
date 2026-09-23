@@ -8,9 +8,9 @@ import pandas as pd
 
 #______________Test and Error information____________________________
 
-Test_Analyte = 'Nt-proBNP'
-Test_Unit = 'ng/L'
-Input_file_name = 'Input_file.xlsx'
+Test_Analyte = 'Digoxin'
+Test_Unit = 'nmol/L'
+Input_file_name = 'Chemistry.xlsx'
 Output_file_name = 'MethodComparison.docx'
 
 Error_level_cut_off = None # cut-off between absolute and percentage error
@@ -40,18 +40,18 @@ CC.manage_figures_folder() # delete and recreate the Figures folder
 
 print("Reading Data...", flush = True)
 df_MC = pd.read_excel(Input_file_name, 
-                      sheet_name='Method Comparison', 
+                      sheet_name='Accuracy', 
                       usecols='B:G', 
-                      skiprows=range(0, 43))
+                      skiprows=range(0, 16))
 
 
 print("Generating Method Comparison Report...")
 CC.MC_output(analyte=Test_Analyte,
             document = Document(Output_file_name), 
-             x = df_MC.iloc[:,2], 
-             y = df_MC.iloc[:,3], 
+             x = df_MC.iloc[:,3], 
+             y = df_MC.iloc[:,4], 
              z = None,
-             z2 = df_MC['Day'],
+             z2 = None,
              Unit = Test_Unit, 
              Error_level_cut_off = Error_level_cut_off, 
              error1 = error1, 
