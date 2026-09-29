@@ -71,6 +71,8 @@ df_MC = pd.read_excel(Input_file_name,
 
 
 print("Generating Method Comparison Report...")
+## TO DO: Add error handling for missing columns or incorrect data types in the Excel file
+## E.g. when columns are missing; program crashes
 CC.MC_output(analyte=Test_Analyte,
             document = Document(Output_file_name), 
              x = df_MC.iloc[:,3], 
