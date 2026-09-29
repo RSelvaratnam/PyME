@@ -1903,18 +1903,21 @@ def MC_output(document,analyte, x, y, z=None, z2=None, Unit=None, **error_info):
 
     p = document.add_paragraph("")
     p.add_run("The Reference Method (X) is: ")
-    p.add_run(str(x.name)).bold = True
+    p.add_run(f"{analyte} (old) - Current method").bold = True
 
     p = document.add_paragraph("")
     p.add_run("The Test Method (Y) is: ")
-    p.add_run(str(y.name)).bold = True
+    p.add_run(f"{analyte} (new) - Test method").bold = True
 
     ### Distribution Analysis
     #### Histogram
     #document.add_page_break()
     document.add_heading("Distribution of Measurements:", level=3)
+
+    print(f"Creating Histogram for {analyte} (old) and {analyte} (new)", flush=True)
     Histogram_grouped(x, y)
     FigWhiteCrop("Figures/boxplot.png")
+    
     document.add_picture("Figures/cropped_plot_boxplot.png", width=Inches(8))
 
     Table1, Table1b = sample_comparions_tableX(x, y, z, **error_info)
