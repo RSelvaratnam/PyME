@@ -8,14 +8,14 @@ import pandas as pd
 
 #______________Test and Error information____________________________
 
-Test_Analyte = 'Digoxin'
-Test_Unit = 'nmol/L'
+Test_Analyte = input("Enter name of the measurand: ").strip()
+Test_Unit = input("What is the unit of measure? ").strip()
 
 Output_file_name = 'MethodComparison.docx'
 
-Error_level_cut_off = 2.0 # cut-off between absolute and percentage error
-error1 = 0.2 # absolute error limit below the cut-off
-error2 = 10 # percentage error limit above the cut-off
+Error_level_cut_off = 3 # cut-off between absolute and percentage error
+error1 = 20 # absolute error limit below the cut-off
+error2 = 15 # percentage error limit above the cut-off
 #___________________________________________________________
 
 def get_input_file_name():
@@ -32,7 +32,7 @@ def get_input_file_name():
 
     while True:
         Input_file_name = input("\nPlease enter the name of the input file (e.g., Input_file.xlsx): ").strip()
-        #remoe quotes if user drags file into terminal
+        #remove quotes if user drags file into terminal
         Input_file_name = Input_file_name.strip('"').strip("'")
 
         if not Input_file_name:
@@ -50,7 +50,8 @@ def get_input_file_name():
             print(f"File '{Input_file_name}' does not exist. Please try again.")
 
 # Get and validate input file
-Input_file_name = get_input_file_name()
+Input_file_name = get_input_file_name().strip()
+
 
 #open a blank document
 document = Document()
@@ -71,8 +72,6 @@ df_MC = pd.read_excel(Input_file_name,
 
 
 print("Generating Method Comparison Report...")
-## TO DO: Add error handling for missing columns or incorrect data types in the Excel file
-## E.g. when columns are missing; program crashes
 CC.MC_output(analyte=Test_Analyte,
             document = Document(Output_file_name), 
              x = df_MC.iloc[:,3], 
