@@ -1869,7 +1869,7 @@ def MC_output(document,analyte, x, y, z=None, z2=None, Unit=None, **error_info):
         
     # add heading
     #p = document.add_heading(f"Method Comparison Studies", level=1)
-    p = document.add_heading(f" {y.name} vs. {x.name}", level=2)
+    p = document.add_heading(f" {analyte} (new) vs. {analyte} (old)", level=2)
     p = document.add_paragraph("")
 
     p.add_run(

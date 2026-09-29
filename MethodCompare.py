@@ -10,7 +10,7 @@ import pandas as pd
 
 Test_Analyte = 'Digoxin'
 Test_Unit = 'nmol/L'
-#Input_file_name = 'Input_file.xlsx'
+
 Output_file_name = 'MethodComparison.docx'
 
 Error_level_cut_off = 2.0 # cut-off between absolute and percentage error
@@ -54,15 +54,6 @@ Input_file_name = get_input_file_name()
 
 #open a blank document
 document = Document()
-
-#adjust page margins
-sections = document.sections
-for section in sections:
-    section.top_margin = Cm(1.5)
-    section.bottom_margin = Cm(1.5)
-    section.left_margin = Cm(1.5)
-    section.right_margin = Cm(1.5)
-
 document.save(Output_file_name)
 
 '''
