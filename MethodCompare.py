@@ -10,13 +10,47 @@ import pandas as pd
 
 Test_Analyte = 'Digoxin'
 Test_Unit = 'nmol/L'
-Input_file_name = 'Chemistry.xlsx'
+#Input_file_name = 'Input_file.xlsx'
 Output_file_name = 'MethodComparison.docx'
 
-Error_level_cut_off = None # cut-off between absolute and percentage error
-error1 = None # absolute error limit below the cut-off
-error2 = 15 # percentage error limit above the cut-off
+Error_level_cut_off = 2.0 # cut-off between absolute and percentage error
+error1 = 0.2 # absolute error limit below the cut-off
+error2 = 10 # percentage error limit above the cut-off
 #___________________________________________________________
+
+def get_input_file_name():
+    """ Ask the user to input the name of the input file and check if it exists. """
+
+    print(f"Checking directory: {os.getcwd()}")
+    xlsx_files = [f for f in os.listdir() if f.lower().endswith('.xlsx')]
+
+    if xlsx_files:
+        print(f"Found the following .xlsx files: {', '.join(xlsx_files)}")
+    else:
+        print("No .xlsx files found in the current directory.")
+        sys.exit(1)
+
+    while True:
+        Input_file_name = input("\nPlease enter the name of the input file (e.g., Input_file.xlsx): ").strip()
+        #remoe quotes if user drags file into terminal
+        Input_file_name = Input_file_name.strip('"').strip("'")
+
+        if not Input_file_name:
+            print("Please enter a valid file name.")
+            continue
+
+        # auto-add extension if not provided
+        if not Input_file_name.lower().endswith('.xlsx'):
+            Input_file_name += '.xlsx'
+
+        if os.path.isfile(Input_file_name):
+            print(f"File '{Input_file_name}' found.")
+            return Input_file_name
+        else:
+            print(f"File '{Input_file_name}' does not exist. Please try again.")
+
+# Get and validate input file
+Input_file_name = get_input_file_name()
 
 #open a blank document
 document = Document()
