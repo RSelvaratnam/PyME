@@ -15,9 +15,9 @@ Test_Unit = input("What is the unit of measure? ").strip()
 
 Output_file_name = 'MethodComparison.docx'
 
-Error_level_cut_off = 3 # cut-off between absolute and percentage error
-error1 = 20 # absolute error limit below the cut-off
-error2 = 15 # percentage error limit above the cut-off
+Error_level_cut_off = 2 # cut-off between absolute and percentage error
+error1 = 0.2 # absolute error limit below the cut-off
+error2 = 10 # percentage error limit above the cut-off
 #___________________________________________________________
 
 def get_input_file_name():
