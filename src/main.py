@@ -1,3 +1,4 @@
+import asyncio
 from io import BytesIO
 
 import flet as ft
@@ -8,16 +9,14 @@ except ImportError:
     pd = None
 
 try:
-    from src import PyME_functions as CC
-except ImportError as e:
-    print(f"Failed to import PyME_functions: {e}")
+    import PyME_functions as CC
+except ImportError:
     CC = None
 
 try:
     from docx import Document
 except ImportError:
     Document = None
-
 
 
 def stream_to_bytes(stream):
@@ -43,10 +42,10 @@ def main(page: ft.Page):
     hist_img = ft.Image(src=b"", visible=False, width=900)
     deming_img = ft.Image(src=b"", visible=False, width=600)
     status = ft.Text("Choose an Excel workbook to begin.")
-    generate_button = ft.Button(
-        content="Generate", disabled=True, on_click=None
-    )
-    data_store = {"data": None}
+    progress = ft.ProgressBar(value=None, visible=False)
+    pick_button = ft.Button(content="Pick Excel")
+    generate_button = ft.Button(content="Generate", disabled=True)
+    data_store = {"data": None, "generating": False}
     file_picker = ft.FilePicker()
 
     async def pick_excel(_):
@@ -87,8 +86,18 @@ def main(page: ft.Page):
             status.value = f"Could not read the Accuracy sheet: {exc}"
         page.update()
 
+    async def show_progress(message):
+        status.value = message
+        progress.visible = True
+        progress.value = None
+        page.update()
+        # Yield briefly so the client can paint the indicator before the next task.
+        await asyncio.sleep(0.05)
+
     async def generate(_):
         df = data_store["data"]
+        if data_store["generating"]:
+            return
         if df is None:
             status.value = "Choose a workbook before generating the comparison."
             page.update()
@@ -105,6 +114,14 @@ def main(page: ft.Page):
             page.update()
             return
 
+        data_store["generating"] = True
+        pick_button.disabled = True
+        generate_button.disabled = True
+        progress.visible = True
+        progress.value = None
+        page.update()
+        await asyncio.sleep(0.05)
+
         try:
             cutoff_value = float(cutoff.value)
             error1_value = float(error1.value)
@@ -114,25 +131,31 @@ def main(page: ft.Page):
             x.name = f"{analyte.value} Ref."
             y.name = f"{analyte.value} Test"
 
-            hist_stream = CC.Histogram_grouped(x, y)
+            await show_progress("Creating histogram…")
+            hist_stream = await asyncio.to_thread(CC.Histogram_grouped, x, y)
             hist_img.src = stream_to_bytes(hist_stream)
             hist_img.visible = True
+            page.update()
 
-            deming_stream, n, slope, intercept, r = (
-                CC.Deming_Plot_Equal_Variance_with_Error2_PX(
-                    x,
-                    y,
-                    Error_level_cut_off=cutoff_value,
-                    error1=error1_value,
-                    error2=error2_value,
-                )
+            await show_progress("Calculating Deming regression…")
+            deming_result = await asyncio.to_thread(
+                CC.Deming_Plot_Equal_Variance_with_Error2_PX,
+                x,
+                y,
+                Error_level_cut_off=cutoff_value,
+                error1=error1_value,
+                error2=error2_value,
             )
+            deming_stream, n, slope, intercept, r = deming_result
             deming_img.src = stream_to_bytes(deming_stream)
             deming_img.visible = True
+            page.update()
 
-            report = CC.MC_output(
-                analyte=analyte.value,
+            await show_progress("Building the Word report…")
+            report = await asyncio.to_thread(
+                CC.MC_output,
                 document=Document(),
+                analyte=analyte.value,
                 x=x,
                 y=y,
                 Unit=unit.value,
@@ -141,7 +164,11 @@ def main(page: ft.Page):
                 error2=error2_value,
             )
             report_buffer = BytesIO()
-            report.save(report_buffer)
+            await asyncio.to_thread(report.save, report_buffer)
+
+            progress.visible = False
+            status.value = "Report ready. Choose where to save the DOCX file."
+            page.update()
             saved_path = await file_picker.save_file(
                 dialog_title="Save method comparison report",
                 file_name="MethodComparison.docx",
@@ -158,8 +185,14 @@ def main(page: ft.Page):
             status.value = f"Check the numeric inputs and workbook data: {exc}"
         except Exception as exc:
             status.value = f"Could not generate the comparison: {exc}"
-        page.update()
+        finally:
+            progress.visible = False
+            pick_button.disabled = False
+            generate_button.disabled = data_store["data"] is None
+            data_store["generating"] = False
+            page.update()
 
+    pick_button.on_click = pick_excel
     generate_button.on_click = generate
     page.add(
         ft.Column(
@@ -176,8 +209,9 @@ def main(page: ft.Page):
                                 cutoff,
                                 error1,
                                 error2,
-                                ft.Button(content="Pick Excel", on_click=pick_excel),
+                                pick_button,
                                 generate_button,
+                                progress,
                                 status,
                             ]
                         ),
@@ -190,5 +224,4 @@ def main(page: ft.Page):
     )
 
 
-#ft.run(main)
-app = ft.run(main, export_asgi_app=True)
+ft.run(main)
