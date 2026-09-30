@@ -34,8 +34,8 @@ def main(page: ft.Page):
     if not page.web:
         page.window.maximized = True
 
-    analyte = ft.TextField(label="Measurand", value="Glucose")
-    unit = ft.TextField(label="Unit", value="mg/dL")
+    analyte = ft.TextField(label="Measurand", value="Digoxin")
+    unit = ft.TextField(label="Unit", value="nmol/L")
     cutoff = ft.TextField(label="Cut-off", value="2")
     error1 = ft.TextField(label="Absolute error", value="0.2")
     error2 = ft.TextField(label="% error", value="10")
