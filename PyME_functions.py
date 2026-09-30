@@ -24,11 +24,9 @@ def FigWhiteCrop_stream(fig_or_pil, margin=10):
     """
     # 1. Get a PIL Image
     if hasattr(fig_or_pil, 'write_image'): # it's a plotly fig
-        buf = BytesIO()
-        # to_image is faster than write_image for memory
         img_bytes = fig_or_pil.to_image(format="png", scale=2)
-        buf = BytesIO(img_bytes)
-        img = Image.open(buf)
+        img = Image.open(BytesIO(img_bytes))
+
     else:
         img = fig_or_pil # already PIL
 
