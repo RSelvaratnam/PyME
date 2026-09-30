@@ -9,3 +9,5 @@ uncertainties
 kaleido
 flet-fastapi
 uvicorn
+httpcore>=1.0.8
+httpx>=0.28.1
