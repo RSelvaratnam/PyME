@@ -29,6 +29,8 @@ def stream_to_bytes(stream):
 
 def main(page: ft.Page):
     page.title = "PyME - Method Comparison"
+    if not page.web:
+        page.window.maximized = True
 
     analyte = ft.TextField(label="Measurand", value="Glucose")
     unit = ft.TextField(label="Unit", value="mg/dL")
@@ -159,8 +161,11 @@ def main(page: ft.Page):
     generate_button.on_click = generate
     page.add(
         ft.Column(
+            expand=True,
+            scroll=ft.ScrollMode.AUTO,
             controls=[
                 ft.Row(
+                    scroll=ft.ScrollMode.AUTO,
                     controls=[
                         ft.Column(
                             controls=[
@@ -179,7 +184,6 @@ def main(page: ft.Page):
                     vertical_alignment=ft.CrossAxisAlignment.START,
                 )
             ],
-            scroll=ft.ScrollMode.AUTO,
         )
     )
 
