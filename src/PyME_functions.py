@@ -120,6 +120,8 @@ def sample_comparions_tableX(x, y, z, **error_info):
         Error_level_cut_off = float(Error_level_cut_off)
 
     # Create dataframe
+    if z is None:
+        z = pd.Series("", index=x.index, name="Group")
     analyte_dataSummary = pd.concat([x, y, z], axis=1).reset_index(drop=True)
     analyte_dataSummary.index = range(1, len(analyte_dataSummary) + 1)
     analyte_dataSummary.index.name = 'Sample ID'
@@ -751,7 +753,7 @@ def create_word_table(document, MyTable):
                 paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER # center text in each cell
                 for run in paragraph.runs:
                     run.font.size = Pt(10)
-    document.save("MethodComparison.docx")
+
 
 def MC_output(document,analyte, x, y, z=None, z2=None, Unit=None, **error_info):    
     """
@@ -882,4 +884,4 @@ def MC_output(document,analyte, x, y, z=None, z2=None, Unit=None, **error_info):
     )
     
     write_to_csv(analyte, n, round(slope,4), round(yintercept,4), round(Pearson_r,4), round(median_bias,4), round(percent_bias,4), Unit)
-    document.save("MethodComparison.docx")
+    return document

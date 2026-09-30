@@ -126,7 +126,7 @@ def main(page: ft.Page):
             deming_img.src = stream_to_bytes(deming_stream)
             deming_img.visible = True
 
-            CC.MC_output(
+            report = CC.MC_output(
                 analyte=analyte.value,
                 document=Document(),
                 x=x,
@@ -136,10 +136,20 @@ def main(page: ft.Page):
                 error1=error1_value,
                 error2=error2_value,
             )
-            status.value = (
-                f"Generated comparison for {n} samples. "
-                f"Slope: {slope:.3f}; intercept: {intercept:.3f}; r: {r:.3f}."
+            report_buffer = BytesIO()
+            report.save(report_buffer)
+            saved_path = await file_picker.save_file(
+                dialog_title="Save method comparison report",
+                file_name="MethodComparison.docx",
+                src_bytes=report_buffer.getvalue(),
             )
+            if saved_path:
+                status.value = (
+                    f"Report saved to {saved_path}. Generated comparison for {n} samples. "
+                    f"Slope: {slope:.3f}; intercept: {intercept:.3f}; r: {r:.3f}."
+                )
+            else:
+                status.value = "Report generated, but saving was canceled."
         except (ValueError, TypeError) as exc:
             status.value = f"Check the numeric inputs and workbook data: {exc}"
         except Exception as exc:
