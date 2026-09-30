@@ -26,7 +26,7 @@ def FigWhiteCrop_stream(fig_or_pil, margin=10):
     if hasattr(fig_or_pil, 'write_image'): # it's a plotly fig
         buf = BytesIO()
         # to_image is faster than write_image for memory
-        img_bytes = fig_or_pil.to_image(format="png", height=450, width=900, scale=2)
+        img_bytes = fig_or_pil.to_image(format="png", scale=2)
         buf = BytesIO(img_bytes)
         img = Image.open(buf)
     else:
@@ -86,6 +86,7 @@ def Histogram_grouped(x, y):
         yaxis=dict(showgrid=True, gridcolor="lightgrey"),
         xaxis_title='Result', yaxis_title='Count (Normalized)',
         bargap=0.2,
+        height = 450, width = 900,
     )
     # fig.show() # remove this for report generation
 
@@ -544,6 +545,7 @@ def Difference_plot_median_with_error2(x, y, z=None, z2=None, **error_info):
         xaxis=dict(showgrid=True, gridcolor="lightgrey", title=x.name),
         yaxis=dict(showgrid=True, gridcolor="lightgrey", title=f"{y.name} - {x.name}"),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5),
+        height=600, width=600, 
     )
 
     return median_y, FigWhiteCrop_stream(fig, margin=10)
