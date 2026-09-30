@@ -1,0 +1,11 @@
+flet
+pandas
+openpyxl
+python-docx
+numpy
+plotly
+pillow
+uncertainties
+kaleido
+flet-fastapi
+uvicorn
