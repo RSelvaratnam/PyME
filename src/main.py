@@ -8,14 +8,16 @@ except ImportError:
     pd = None
 
 try:
-    import PyME_functions as CC
-except ImportError:
+    from src import PyME_functions as CC
+except ImportError as e:
+    print(f"Failed to import PyME_functions: {e}")
     CC = None
 
 try:
     from docx import Document
 except ImportError:
     Document = None
+
 
 
 def stream_to_bytes(stream):
