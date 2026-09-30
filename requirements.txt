@@ -1,4 +1,4 @@
-flet
+flet>=1.0.0
 pandas
 openpyxl
 python-docx
@@ -7,7 +7,6 @@ plotly
 pillow
 uncertainties
 kaleido
-flet-fastapi
 uvicorn
 httpcore>=1.0.8
 httpx>=0.28.1
