@@ -10,7 +10,12 @@ dependencies = [
     "flet",
     "pandas",
     "openpyxl",
-    "python-docx"
+    "python-docx",
+    "numpy",
+    "plotly",
+    "pillow",
+    "uncertainties",
+    "kaleido"
 ]
 
 [dependency-groups]
