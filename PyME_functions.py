@@ -126,6 +126,7 @@ def sample_comparions_tableX(x, y, z, **error_info):
     analyte_dataSummary.index = range(1, len(analyte_dataSummary) + 1)
     analyte_dataSummary.index.name = 'Sample ID'
     analyte_dataSummary = analyte_dataSummary.reset_index()
+    analyte_dataSummary = analyte_dataSummary.dropna(subset=[x.name, y.name])  # Drop rows where either x or y is NaN
 
     # Convert to numeric, coerce errors to NaN, because we perform numeric calculations
     analyte_dataSummary.iloc[:,1] = pd.to_numeric(analyte_dataSummary.iloc[:,1], errors='coerce') #reference method
@@ -201,7 +202,7 @@ def data_summary(dataAll):
     # Keep only numeric columns
     df = dataAll.select_dtypes(include=[np.number])
     
-    # We'll build a list of dicts → clean, readable, and flexible
+    #build a list of dicts 
     rows = []
     
     for col in df.columns:
@@ -222,7 +223,7 @@ def data_summary(dataAll):
             sem = sd / np.sqrt(n)
             cv = round((sd / mean * 100),2) if mean != 0 else np.nan
         
-        # This is the magic line — ufloat handles ALL sig fig rules automatically
+        # ufloat handles ALL sig fig rules automatically
         mean_with_unc = ufloat(mean, sem) if n > 1 else mean
         
         rows.append({
