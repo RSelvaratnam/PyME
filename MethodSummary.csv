@@ -2,3 +2,5 @@ Analyte,N,Slope,y-Intercept,Pearson's r,Median Bias,% Bias,Unit
 Nt-proBNP,40,0.9921,49.0752,0.9929,22.55,2.5364,ng/L
 Nt-proBNP,40,0.9921,49.0752,0.9929,22.55,2.5364,ng/L
 Digoxin,25,0.9565,0.0318,0.9972,-0.028,-2.1598,nmol/L
+Digoxin,25,0.9565,0.0318,0.9972,-0.028,-2.1598,d
+Digoxin,25,0.9565,0.0318,0.9972,-0.028,-2.1598,u/n

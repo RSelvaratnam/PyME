@@ -1,8 +1,11 @@
 import sys
 import os
-import CC_Method_Analysis_v_0_1 as CC
+
+
+import PyME_functions as CC
+
 from docx import Document 
-from docx.shared import Inches, Cm, Pt
+
 import pandas as pd
 
 
@@ -60,8 +63,6 @@ document.save(Output_file_name)
 Method comparison begins here; loading data into dataframe, df_MC
 '''
 
-print("Recreate Figures folder...", flush=True)
-CC.manage_figures_folder() # delete and recreate the Figures folder
 
 print("Reading Data...", flush = True)
 df_MC = pd.read_excel(Input_file_name, 
