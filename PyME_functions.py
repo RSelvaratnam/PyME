@@ -778,7 +778,7 @@ def MC_output(document,analyte, x, y, z=None, z2=None, Unit=None, **error_info):
         
     # add heading
     #p = document.add_heading(f"Method Comparison Studies", level=1)
-    p = document.add_heading(f" {analyte} (new) vs. {analyte} (old)", level=2)
+    p = document.add_heading(f" {analyte} Test vs. {analyte} Ref.", level=2)
     p = document.add_paragraph("")
 
     p.add_run(
@@ -812,18 +812,21 @@ def MC_output(document,analyte, x, y, z=None, z2=None, Unit=None, **error_info):
 
     p = document.add_paragraph("")
     p.add_run("The Reference Method (X) is: ")
-    p.add_run(f"{analyte} (old) - Current method").bold = True
+    p.add_run(f"{analyte} Ref.").bold = True
 
     p = document.add_paragraph("")
     p.add_run("The Test Method (Y) is: ")
-    p.add_run(f"{analyte} (new) - Test method").bold = True
+    p.add_run(f"{analyte} Test").bold = True
 
     ### Distribution Analysis
     #### Histogram
     #document.add_page_break()
     document.add_heading("Distribution of Measurements:", level=3)
 
-    print(f"Creating Histogram for {analyte} (old) and {analyte} (new)", flush=True)
+    print(f"Creating Histogram for {analyte} Ref. and {analyte} Test", flush=True)
+    x.name = f"{analyte} Ref."
+    y.name = f"{analyte} Test"
+    
     hist_stream = Histogram_grouped(x, y)
     
     document.add_picture(hist_stream, width=Inches(8))
