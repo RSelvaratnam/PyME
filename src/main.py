@@ -1,4 +1,5 @@
 import asyncio
+import csv
 from io import BytesIO
 
 import flet as ft
@@ -9,7 +10,7 @@ except ImportError:
     pd = None
 
 try:
-    from src import PyME_functions as CC
+    import PyME_functions as CC
 except ImportError as e:
     print(f"Failed to import PyME_functions: {e}")
     CC = None
@@ -34,73 +35,145 @@ def main(page: ft.Page):
     if not page.web:
         page.window.maximized = True
 
-    analyte = ft.TextField(label="Measurand", value="Digoxin")
-    unit = ft.TextField(label="Unit", value="nmol/L")
+    analyte = ft.TextField(label="Measurand", value="Glucose")
+    unit = ft.TextField(label="Unit", value="g/L")
     cutoff = ft.TextField(label="Cut-off", value="2")
     error1 = ft.TextField(label="Absolute error", value="0.2")
     error2 = ft.TextField(label="% error", value="10")
 
     hist_img = ft.Image(src=b"", visible=False, width=900)
     deming_img = ft.Image(src=b"", visible=False, width=600)
-    status = ft.Text("Choose an Excel workbook to begin.")
+    status = ft.Text("Enter paired values in the spreadsheet, then select Generate.")
     progress = ft.ProgressBar(value=None, visible=False)
-    pick_button = ft.Button(content="Pick Excel")
     generate_button = ft.Button(content="Generate", disabled=True)
-    data_store = {"data": None, "generating": False}
-    file_picker = ft.FilePicker()
+    clipboard = ft.Clipboard()
+    data_store = {"generating": False, "active_cell": (0, 0)}
+    spreadsheet_rows = []
+    initial_row_count = 20
 
-    async def pick_excel(_):
-        if pd is None:
-            status.value = "Excel support is unavailable: pandas could not be imported."
-            page.update()
-            return
-
-        files = await file_picker.pick_files(
-            dialog_title="Choose an Excel workbook",
-            file_type=ft.FilePickerFileType.CUSTOM,
-            allowed_extensions=["xlsx"],
-            allow_multiple=False,
-            with_data=True,
+    def update_generate_enabled():
+        has_values = any(
+            (cell.value or "").strip()
+            for row in spreadsheet_rows
+            for cell in row
         )
-        if not files:
-            return
+        generate_button.disabled = not has_values or data_store["generating"]
+        page.update()
 
-        selected = files[0]
-        if selected.bytes is None:
-            status.value = "The workbook could not be read. Please choose it again."
+    def set_active_cell(row_index, column_index):
+        def on_focus():
+            data_store["active_cell"] = (row_index, column_index)
+        return on_focus
+
+    def add_spreadsheet_rows(count):
+        start_index = len(spreadsheet_rows)
+        for row_index in range(start_index, start_index + count):
+            row_cells = []
+            for column_index in range(2):
+                row_cells.append(
+                    ft.TextField(
+                        value="",
+                        width=190,
+                        on_focus=set_active_cell(row_index, column_index),
+                        on_change=update_generate_enabled,
+                    )
+                )
+            spreadsheet_rows.append(row_cells)
+            spreadsheet_grid.controls.append(
+                ft.Row(
+                    spacing=0,
+                    controls=[
+                        ft.Container(
+                            width=44,
+                            alignment=ft.Alignment.CENTER,
+                            border=ft.Border.all(1, ft.Colors.OUTLINE),
+                            content=ft.Text(str(row_index + 1)),
+                        ),
+                        *row_cells,
+                    ],
+                )
+            )
+
+    async def paste_from_clipboard():
+        pasted = await clipboard.get()
+        if not pasted or not pasted.strip():
+            status.value = "Copy two adjacent numeric columns, then choose Paste from Excel."
             page.update()
             return
 
         try:
-            data_store["data"] = pd.read_excel(
-                BytesIO(selected.bytes),
-                sheet_name="Accuracy",
-                usecols="B:G",
-                skiprows=range(0, 16),
-                engine="openpyxl",
-            )
-            generate_button.disabled = False
-            status.value = f"Loaded {selected.name}. Ready to generate the comparison."
-        except Exception as exc:
-            data_store["data"] = None
-            generate_button.disabled = True
-            status.value = f"Could not read the Accuracy sheet: {exc}"
+            matrix = [
+                row
+                for row in csv.reader(pasted.splitlines(), delimiter="\t")
+                if any(value.strip() for value in row)
+            ]
+        except csv.Error as exc:
+            status.value = f"Could not read clipboard data: {exc}"
+            page.update()
+            return
+
+        start_row, start_column = data_store["active_cell"]
+        needed_rows = start_row + len(matrix) - len(spreadsheet_rows)
+        if needed_rows > 0:
+            add_spreadsheet_rows(needed_rows)
+
+        for row_offset, values in enumerate(matrix):
+            target_row = spreadsheet_rows[start_row + row_offset]
+            for column_offset, value in enumerate(values[: 2 - start_column]):
+                target_row[start_column + column_offset].value = value.strip()
+
+        data_store["active_cell"] = (start_row, start_column)
+        update_generate_enabled()
+        status.value = (
+            f"Pasted {len(matrix)} spreadsheet rows starting at row {start_row + 1}. "
+            "Reference (X) is the first column; Test (Y) is the second."
+        )
         page.update()
+
+    def add_more_rows():
+        add_spreadsheet_rows(10)
+        page.update()
+
+    spreadsheet_grid = ft.ListView(
+        height=360,
+        spacing=0,
+        scroll=ft.ScrollMode.AUTO,
+        controls=[],
+    )
+    add_spreadsheet_rows(initial_row_count)
 
     async def show_progress(message):
         status.value = message
         progress.visible = True
         progress.value = None
         page.update()
-        # Yield briefly so the client can paint the indicator before the next task.
         await asyncio.sleep(0.05)
 
-    async def generate(_):
-        df = data_store["data"]
+    def read_spreadsheet_data():
+        x_values = []
+        y_values = []
+        for row_index, row in enumerate(spreadsheet_rows, start=1):
+            x_text = (row[0].value or "").strip()
+            y_text = (row[1].value or "").strip()
+            if not x_text and not y_text:
+                continue
+            if not x_text or not y_text:
+                raise ValueError(f"Row {row_index} needs both X and Y values.")
+            try:
+                x_values.append(float(x_text))
+                y_values.append(float(y_text))
+            except ValueError as exc:
+                raise ValueError(f"Row {row_index} contains a non-numeric value.") from exc
+
+        if not x_values:
+            raise ValueError("Enter or paste at least one paired X and Y row.")
+        return pd.DataFrame({"Reference": x_values, "Test": y_values})
+
+    async def generate():
         if data_store["generating"]:
             return
-        if df is None:
-            status.value = "Choose a workbook before generating the comparison."
+        if pd is None:
+            status.value = "Data processing is unavailable: pandas could not be imported."
             page.update()
             return
         if CC is None:
@@ -115,24 +188,32 @@ def main(page: ft.Page):
             page.update()
             return
 
+        try:
+            df = read_spreadsheet_data()
+            cutoff_value = float(cutoff.value)
+            error1_value = float(error1.value)
+            error2_value = float(error2.value)
+        except (ValueError, TypeError) as exc:
+            status.value = f"Check the spreadsheet and numeric settings: {exc}"
+            page.update()
+            return
+
         data_store["generating"] = True
-        pick_button.disabled = True
         generate_button.disabled = True
+        paste_button.disabled = True
+        add_rows_button.disabled = True
         progress.visible = True
         progress.value = None
         page.update()
         await asyncio.sleep(0.05)
 
         try:
-            cutoff_value = float(cutoff.value)
-            error1_value = float(error1.value)
-            error2_value = float(error2.value)
-            x = df.iloc[:, 3].copy()
-            y = df.iloc[:, 4].copy()
+            x = df["Reference"].copy()
+            y = df["Test"].copy()
             x.name = f"{analyte.value} Ref."
             y.name = f"{analyte.value} Test"
 
-            await show_progress("Assessing measurement distributions…")
+            await show_progress("Creating histogram…")
             hist_stream = await asyncio.to_thread(CC.Histogram_grouped, x, y)
             hist_img.src = stream_to_bytes(hist_stream)
             hist_img.visible = True
@@ -183,18 +264,24 @@ def main(page: ft.Page):
             else:
                 status.value = "Report generated, but saving was canceled."
         except (ValueError, TypeError) as exc:
-            status.value = f"Check the numeric inputs and workbook data: {exc}"
+            status.value = f"Check the spreadsheet and numeric inputs: {exc}"
         except Exception as exc:
             status.value = f"Could not generate the comparison: {exc}"
         finally:
             progress.visible = False
-            pick_button.disabled = False
-            generate_button.disabled = data_store["data"] is None
+            paste_button.disabled = False
+            add_rows_button.disabled = False
             data_store["generating"] = False
-            page.update()
+            update_generate_enabled()
 
-    pick_button.on_click = pick_excel
+    paste_button = ft.Button(
+        content="Paste from Excel clipboard",
+        on_click=paste_from_clipboard,
+    )
+    add_rows_button = ft.TextButton(content="Add 10 rows", on_click=add_more_rows)
     generate_button.on_click = generate
+    file_picker = ft.FilePicker()
+
     page.add(
         ft.Column(
             expand=True,
@@ -210,7 +297,35 @@ def main(page: ft.Page):
                                 cutoff,
                                 error1,
                                 error2,
-                                pick_button,
+                                ft.Text(
+                                    "Spreadsheet input: copy two adjacent numeric columns from Excel, "
+                                    "then focus a starting cell and choose Paste from Excel clipboard."
+                                ),
+                                ft.Row(
+                                    spacing=0,
+                                    controls=[
+                                        ft.Container(
+                                            width=44,
+                                            alignment=ft.Alignment.CENTER,
+                                            border=ft.Border.all(1, ft.Colors.OUTLINE),
+                                            content=ft.Text("#"),
+                                        ),
+                                        ft.Container(
+                                            width=190,
+                                            alignment=ft.Alignment.CENTER,
+                                            border=ft.Border.all(1, ft.Colors.OUTLINE),
+                                            content=ft.Text("Reference (X)"),
+                                        ),
+                                        ft.Container(
+                                            width=190,
+                                            alignment=ft.Alignment.CENTER,
+                                            border=ft.Border.all(1, ft.Colors.OUTLINE),
+                                            content=ft.Text("Test (Y)"),
+                                        ),
+                                    ],
+                                ),
+                                spreadsheet_grid,
+                                ft.Row(controls=[paste_button, add_rows_button]),
                                 generate_button,
                                 progress,
                                 status,
