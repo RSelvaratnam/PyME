@@ -10,7 +10,7 @@ except ImportError:
     pd = None
 
 try:
-    import PyME_functions as CC
+    from src import PyME_functions as CC
 except ImportError as e:
     print(f"Failed to import PyME_functions: {e}")
     CC = None
@@ -35,7 +35,7 @@ def main(page: ft.Page):
     if not page.web:
         page.window.maximized = True
 
-    analyte = ft.TextField(label="Measurand", value="Glucose")
+    analyte = ft.TextField(label="Measurand", value="Glucose",)
     unit = ft.TextField(label="Unit", value="g/L")
     cutoff = ft.TextField(label="Cut-off", value="2")
     error1 = ft.TextField(label="Absolute error", value="0.2")
