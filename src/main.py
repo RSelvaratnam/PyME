@@ -298,9 +298,9 @@ def main(page: ft.Page):
                             controls=[
                                 analyte,
                                 unit,
-                                cutoff,
                                 error1,
                                 error2,
+                                cutoff,
                                 ft.Text(
                                     "Spreadsheet input: copy two adjacent numeric columns from Excel, "
                                     "then focus a starting cell and choose Paste from Excel clipboard."
