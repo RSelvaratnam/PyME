@@ -546,7 +546,6 @@ def Difference_plot_median_with_error2(x, y, z=None, z2=None, **error_info):
         xaxis=dict(showgrid=True, gridcolor="lightgrey", title=x.name),
         yaxis=dict(showgrid=True, gridcolor="lightgrey", title=f"{y.name} - {x.name}"),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5),
-        height=600, width=600, 
     )
 
     return median_y, FigWhiteCrop_stream(fig, margin=10)
