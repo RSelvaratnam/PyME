@@ -37,9 +37,10 @@ def main(page: ft.Page):
 
     analyte = ft.TextField(label="Measurand", value="Glucose",)
     unit = ft.TextField(label="Unit", value="g/L")
-    cutoff = ft.TextField(label="Cut-off", value="2")
-    error1 = ft.TextField(label="Absolute error", value="0.2")
-    error2 = ft.TextField(label="% error", value="10")
+    
+    error1 = ft.TextField(label="Absolute Error", value="0.2")
+    error2 = ft.TextField(label="% Error", value="10")
+    cutoff = ft.TextField(label="Cut-off for Error", value="2")
 
     hist_img = ft.Image(src=b"", visible=False, width=900)
     deming_img = ft.Image(src=b"", visible=False, width=600)
@@ -213,7 +214,7 @@ def main(page: ft.Page):
             x.name = f"{analyte.value} Ref."
             y.name = f"{analyte.value} Test"
 
-            await show_progress("Creating histogram…")
+            await show_progress("Assessing measurement distribution…")
             hist_stream = await asyncio.to_thread(CC.Histogram_grouped, x, y)
             hist_img.src = stream_to_bytes(hist_stream)
             hist_img.visible = True
