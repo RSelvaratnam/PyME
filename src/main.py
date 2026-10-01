@@ -10,10 +10,13 @@ except ImportError:
     pd = None
 
 try:
-    from src import PyME_functions as CC
-except ImportError as e:
-    print(f"Failed to import PyME_functions: {e}")
-    CC = None
+    from src import PyME_functions as CC #for Render, which runs from root, so src is in the path
+except ImportError:
+    try:
+        import PyME_functions as CC
+    except ImportError as e:
+        print(f"Failed to import PyME_functions: {e}")
+        CC = None
 
 try:
     from docx import Document
