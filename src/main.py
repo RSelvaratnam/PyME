@@ -132,7 +132,7 @@ def main(page: ft.Page):
             x.name = f"{analyte.value} Ref."
             y.name = f"{analyte.value} Test"
 
-            await show_progress("Creating histogram…")
+            await show_progress("Assessing measurement distributions…")
             hist_stream = await asyncio.to_thread(CC.Histogram_grouped, x, y)
             hist_img.src = stream_to_bytes(hist_stream)
             hist_img.visible = True
