@@ -199,8 +199,11 @@ def data_summary(dataAll):
     Mean ± SEM is displayed perfectly formatted with proper scientific rounding.
     Can aways check the results of this with 'df.describe()' and the CV with 'df.std()/df.mean()'
     """
-    # Keep only numeric columns
-    df = dataAll.select_dtypes(include=[np.number])
+    # Convert everything that can be a number; anything else becomes NaN
+    df = dataAll.apply(pd.to_numeric, errors="coerce")
+
+    # Drop columns that were pure text (e.g. Sample ID labels) — all NaN now
+    df = df.dropna(axis=1, how="all")
     
     #build a list of dicts 
     rows = []
