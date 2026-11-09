@@ -884,6 +884,7 @@ def MC_output(document,analyte, x, y, z=None, z2=None, Unit=None, **error_info):
     run.add_picture(
         percentDiffPlotStream, width=Inches(6)
     )
-    
+    document.add_page_break()
+
     write_to_csv(analyte, n, round(slope,4), round(yintercept,4), round(Pearson_r,4), round(median_bias,4), round(percent_bias,4), Unit)
     return document

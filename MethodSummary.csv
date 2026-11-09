@@ -1,2 +1,3 @@
 Analyte,N,Slope,y-Intercept,Pearson's r,Median Bias,% Bias,Unit
 Glucose,25,0.9565,0.0318,0.9972,-0.028,-2.1598,g/L
+ggt,39,0.909,-2.4246,0.9997,-12.1,-11.1806,U/L
