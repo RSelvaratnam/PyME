@@ -501,7 +501,7 @@ def Difference_plot_median_with_error2(x, y, z=None, z2=None, **error_info):
             y=[median_y, median_y],
             mode="lines",
             line=dict(color="red", dash="solid", width=0.8),
-            name=f"Median Bias: {round(median_y, 1)}",
+            name=f"Median Bias: {round(median_y, 2)}",
         )
     )
 
